@@ -1,31 +1,26 @@
+"""
+The purpouse of this code is to generate histograms from data collected by AMNIS.
+Please type the folder containing all the files, strains used in the experiment,
+peptide number, time of data collection and data type (filtradas o todas)
+"""
+
 import numpy as np
 import csv
 import os
-import re
 import inspect
 from matplotlib import pyplot
 import sys
 
-experiments_data = []
-
-#path = "./amnis_170511/1/filtradas/"
-
-def compare_strains(peptide,time,data_type): #data_type can be filtered or all (filtradas o todas)
+def compare_strains(folder,strains,peptide,time,data_type): #data_type can be filtered or all (filtradas o todas)
 	frame = inspect.currentframe()
 	args, _, _, values = inspect.getargvalues(frame)
-	strains = ["a","alfa","delta_bar1"]
 	experiments_data = []
-	#mat_a = "./amnis_170511/%s/%s/%s%s_a_%s.txt" % (peptide, data_type,peptide,exp_num,time)
-	#mat_alfa = "./amnis_170702/%s/%s/%s%s_alfa_%s.txt" % (peptide, data_type,peptide,exp_num,time)
-	#delta_bar1 = "./amnis_170420/%s/%s/%sBAR1delta_%s.txt" % (peptide, data_type,peptide,time)
-	mat_a = "./amnis_170511/%s/%s/%sa_%s.txt" % (peptide, data_type,peptide,time)
-	mat_alfa = "./amnis_170511/%s/%s/%salfa_%s.txt" % (peptide, data_type,peptide,time)
-	if values["data_type"] == "filtradas":
-		mat_a = mat_a[:-4]+"_filtradas.txt"
-		mat_alfa = mat_alfa[:-4]+"_filtradas.txt"
-		#delta_bar1 = delta_bar1[:-4]+"_filtradas.txt"
-	paths = [mat_a,mat_alfa]#,delta_bar1]
+	paths = []
+	for strain in strains:
+		paths.append("./%s/%s/%s/%s%s_%s.txt" % (folder,peptide, data_type,peptide,strain,time))
 	for path in paths:
+		if values["data_type"] == "filtradas":
+			path = path[:-4]+"_filtradas.txt"
 		data = []
 		f = open(path)
 		reader = csv.reader(f, delimiter='\t')
@@ -33,9 +28,7 @@ def compare_strains(peptide,time,data_type): #data_type can be filtered or all (
 			if len(row) > 1 and not row[0][0].isalpha():
 				data.append(float(row[1]))
 		experiments_data.append(data)
-	bins = np.linspace(3000,200000,100)
-	#f, axarr = pyplot.subplots(3,4)
-	#for i in range(13):
+	bins = np.linspace(3000,100000,100)
 	for num, exp in enumerate(experiments_data):
 		pyplot.hist(exp, bins, alpha=0.5, stacked=True, label=strains[num])
 	pyplot.ylabel("Cells")
@@ -63,4 +56,5 @@ for num, exp in enumerate(experiments_data):
 pyplot.legend(loc='upper right')
 pyplot.show()
 """
-compare_strains(sys.argv[1],sys.argv[2],sys.argv[3])
+compare_strains("amnis_170511",["a","alfa"],1,0,"filtradas")
+#compare_strains(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])
